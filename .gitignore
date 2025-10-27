@@ -1,0 +1,24 @@
+# 排除生成的题目文件
+questions/
+
+# 排除日志文件
+logs/
+
+# 排除环境配置文件
+.env
+
+# Python缓存文件
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 临时文件
+*.tmp
+~$*
+
+# macOS文件
+.DS_Store
+
+# IDE文件
+.vscode/
+.idea/
