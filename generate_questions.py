@@ -133,7 +133,16 @@ class QuestionGenerator:
         # 读取前3行判断格式
         rows = list(ws.iter_rows(min_row=1, max_row=3, values_only=True))
 
-        # 检查第2行是否包含表头关键字
+        # 检查第1行是否包含表头关键字（format2的特征）
+        if len(rows) >= 1:
+            row1 = rows[0]
+            row1_str = ' '.join([str(cell) if cell else '' for cell in row1])
+            # 如果第1行包含"题目序号"、"鉴定点"、"资料"等关键字，判定为格式2
+            if any(keyword in row1_str for keyword in ['题目序号', '鉴定点', '资料']):
+                wb.close()
+                return "format2"
+
+        # 检查第2行是否包含表头关键字（format2的另一种情况）
         if len(rows) >= 2:
             row2 = rows[1]
             row2_str = ' '.join([str(cell) if cell else '' for cell in row2])
@@ -142,7 +151,7 @@ class QuestionGenerator:
                 wb.close()
                 return "format2"
 
-        # 检查第1行第1列是否为数字（序号）
+        # 检查第1行第1列是否为数字（序号）- format1的特征
         if len(rows) >= 1 and rows[0][0]:
             first_cell = str(rows[0][0])
             if first_cell.isdigit():
@@ -176,31 +185,43 @@ class QuestionGenerator:
                 if row[0] is None:  # 跳过空行
                     continue
 
+                # 获取编号并标准化（将中文破折号替换为英文连字符）
+                code = str(row[1]) if row[1] else ""
+                code = code.replace('—', '-').replace('－', '-')
+
                 point = {
                     "序号": str(row[0]) if row[0] else "",
-                    "编号": str(row[1]) if row[1] else "",
+                    "编号": code,  # 使用标准化后的编号
                     "名称": str(row[2]) if row[2] else "",
                     "内容": str(row[3]) if row[3] else "",
                 }
                 knowledge_points.append(point)
 
         else:  # format2
-            # 格式2: 跳过前2行（空行+表头）, 第1列=编号, 第2列=名称, 第3列=内容, 第4列=序号
-            for row in ws.iter_rows(min_row=3, values_only=True):
+            # 格式2: 跳过第1行（表头）, 第1列=编号, 第2列=名称, 第4列=内容（索引3）
+            for row in ws.iter_rows(min_row=2, values_only=True):
                 # 跳过空行（第1列为空）
                 if row[0] is None or str(row[0]).strip() == "":
                     continue
 
-                # 检查是否为有效的鉴定点编号（格式如 A-B-A-001）
+                # 获取编号并标准化（将中文破折号替换为英文连字符）
                 code = str(row[0]).strip()
+                # 替换中文破折号为英文连字符
+                code = code.replace('—', '-').replace('－', '-')
+                
+                # 检查是否为有效的鉴定点编号（格式如 A-B-A-001）
                 if not code or len(code) < 5:
+                    continue
+                
+                # 跳过表头行（如果编号包含"题目序号"等关键字）
+                if any(keyword in code for keyword in ['题目序号', '鉴定点', '序号']):
                     continue
 
                 point = {
-                    "序号": str(row[3]) if len(row) > 3 and row[3] else "",
-                    "编号": code,
-                    "名称": str(row[1]) if len(row) > 1 and row[1] else "",
-                    "内容": str(row[2]) if len(row) > 2 and row[2] else "",
+                    "序号": code,  # 第1列就是序号/编号
+                    "编号": code,  # 使用标准化后的编号
+                    "名称": str(row[1]).strip() if len(row) > 1 and row[1] else "",
+                    "内容": str(row[3]).strip() if len(row) > 3 and row[3] else "",  # 第4列是内容
                 }
                 knowledge_points.append(point)
 
