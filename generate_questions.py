@@ -207,7 +207,7 @@ class QuestionGenerator:
                 knowledge_points.append(point)
 
         elif file_format == "format2":
-            # 格式2: 跳过第1行（表头）, 第1列=编号, 第2列=名称, 第4列=内容（索引3）
+            # 格式2: 跳过第1行（表头）, 第1列=编号, 第2列=名称, 第3列=内容（索引2）
             for row in ws.iter_rows(min_row=2, values_only=True):
                 # 跳过空行（第1列为空）
                 if row[0] is None or str(row[0]).strip() == "":
@@ -230,7 +230,7 @@ class QuestionGenerator:
                     "序号": code,  # 第1列就是序号/编号
                     "编号": code,  # 使用标准化后的编号
                     "名称": str(row[1]).strip() if len(row) > 1 and row[1] else "",
-                    "内容": str(row[3]).strip() if len(row) > 3 and row[3] else "",  # 第4列是内容
+                    "内容": str(row[2]).strip() if len(row) > 2 and row[2] else "",  # 第3列是内容
                 }
                 knowledge_points.append(point)
 
