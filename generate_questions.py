@@ -279,6 +279,15 @@ class QuestionGenerator:
         Returns:
             题目列表，如果生成失败返回None
         """
+        # 检查知识点内容是否为空
+        content = knowledge_point.get('内容', '').strip()
+        if not content:
+            logging.error(f"  ❌ 错误：鉴定点内容为空，无法生成题目")
+            logging.error(f"  鉴定点编号: {knowledge_point.get('编号', '未知')}")
+            logging.error(f"  鉴定点名称: {knowledge_point.get('名称', '未知')}")
+            sys.stdout.flush()
+            return None
+        
         requirements = self.LEVEL_REQUIREMENTS[level]
 
         # 构建prompt，一次性生成所有题目
@@ -469,10 +478,20 @@ class QuestionGenerator:
             sys.stdout.flush()  # 立即刷新输出
 
             json_string = completion.choices[0].message.content
+            
+            # 记录原始响应（用于调试）
+            logging.debug(f"  AI原始响应: {json_string[:500]}...")
+            
             response_data = json.loads(json_string)
 
             # 提取题目列表
             questions = response_data.get("题目列表", [])
+            
+            # 检查是否成功生成题目
+            if not questions:
+                logging.warning(f"  ⚠️  AI返回了空的题目列表")
+                logging.info(f"  完整响应: {json_string}")
+                return None
 
             # 为每个题目添加鉴定点编号
             for q in questions:
@@ -480,8 +499,19 @@ class QuestionGenerator:
 
             return questions
 
+        except json.JSONDecodeError as e:
+            logging.error(f"  ❌ JSON解析失败: {e}")
+            logging.error(f"  AI响应内容: {json_string[:1000] if 'json_string' in locals() else '未获取到响应'}")
+            sys.stdout.flush()
+            return None
+        except KeyError as e:
+            logging.error(f"  ❌ 响应格式错误，缺少必要字段: {e}")
+            logging.error(f"  响应内容: {response_data if 'response_data' in locals() else '未解析'}")
+            sys.stdout.flush()
+            return None
         except Exception as e:
-            logging.error(f"生成题目时出错: {e}")
+            logging.error(f"  ❌ 生成题目时出错: {type(e).__name__}: {e}")
+            sys.stdout.flush()
             return None
 
     def evaluate_questions(self, knowledge_point: Dict[str, str],
