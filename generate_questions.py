@@ -998,7 +998,7 @@ class QuestionGenerator:
         获取已存在的题目文件对应的鉴定点编号
         
         Args:
-            output_dir: 输出目录路径
+            output_dir: 输出目录路径（包含xlsx文件名的子目录）
             
         Returns:
             已存在题目的鉴定点编号集合
@@ -1084,10 +1084,14 @@ class QuestionGenerator:
         logging.info(f"✓ 读取到 {len(knowledge_points)} 个鉴定点")
         sys.stdout.flush()
 
-        # 确定输出目录
+        # 确定输出目录 - 在questions下创建以xlsx文件名命名的子目录
         if output_dir is None:
             # 默认保存到questions目录
-            output_dir = os.path.join(os.path.dirname(__file__), "questions")
+            base_output_dir = os.path.join(os.path.dirname(__file__), "questions")
+            # 从文件名中提取基础名称（去掉.xlsx后缀）
+            xlsx_basename = os.path.splitext(filename)[0]
+            # 创建子目录：questions/五级5001-5010/
+            output_dir = os.path.join(base_output_dir, xlsx_basename)
 
         # 确保输出目录存在
         if not os.path.exists(output_dir):
@@ -1097,7 +1101,7 @@ class QuestionGenerator:
         logging.info(f"✓ 输出目录: {output_dir}")
         sys.stdout.flush()
 
-        # 获取已存在的题目文件
+        # 获取已存在的题目文件（从当前xlsx对应的子目录中）
         existing_codes = self.get_existing_question_codes(output_dir)
         if existing_codes:
             logging.info(f"✓ 发现已存在 {len(existing_codes)} 个题目文件")

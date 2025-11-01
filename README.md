@@ -38,8 +38,18 @@ exam_questions/
 ├── generate_questions.py    # 主程序：AI考题生成
 ├── docx_to_xls.py          # 工具：Word转XLS格式
 ├── resources/              # 教材文件目录
-└── questions/              # 生成的考题目录（自动创建）
+│   ├── 五级5121-5128.xlsx
+│   └── 三级3025-3040.xlsx
+└── questions/              # 生成的考题目录（按xlsx文件名分组）
+    ├── 五级5121-5128/
+    │   ├── 考题B-B-K-001.xls
+    │   └── B-B-K-001.docx
+    └── 三级3025-3040/
+        ├── 考题A-B-C-001.xls
+        └── A-B-C-001.docx
 ```
+
+**说明**：每个xlsx文件的题目都保存在独立的子目录中，避免不同文件中相同编号的鉴定点文件名冲突。
 
 ## 格式转换工具
 
